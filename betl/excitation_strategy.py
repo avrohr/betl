@@ -160,12 +160,12 @@ def estimate_beta(ussm, K, synthesis_settings, settings):
         data_for_plots['GN'] = GN
         data_for_plots['beta_parameter'] = beta_parameter
 
-        import pickle
-
-        with open('data/beta_data_for_plots.pickle', 'wb') as handle:
-            pickle.dump(data_for_plots, handle)
-
-        result.to_pickle('data/beta_dataframe.pickle')
+        # import pickle
+        #
+        # with open('data/beta_data_for_plots.pickle', 'wb') as handle:
+        #     pickle.dump(data_for_plots, handle)
+        #
+        # result.to_pickle('data/beta_dataframe.pickle')
 
 
         sns.despine(fig=fig)
