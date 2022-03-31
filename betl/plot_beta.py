@@ -70,7 +70,7 @@ plt.legend(loc="lower right",
 # adjust margins
 fig.subplots_adjust(bottom=0.24, top=0.95, left=0.17, right=0.98)
 
-plt.show()
+# plt.show()
 
-# plt.savefig('beta-example.pgf', format='pgf')
-# plt.close()
+plt.savefig('figures/beta-example.pgf', format='pgf')
+plt.close()

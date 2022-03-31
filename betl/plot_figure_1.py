@@ -173,11 +173,11 @@ def plot_1d_result(result):
         mutation_scale=20.
     )
 
-    ax1.text(.95, 0.07, "learn", size=12, ha="center",
-             transform=ax1.transAxes, fontsize=8)
+    ax1.text(.95, 0.07, "learn", size=8, ha="center",
+             transform=ax1.transAxes)
 
-    ax1.text(.95, 0.73, "trigger", size=12, ha="center",
-             transform=ax1.transAxes, fontsize=8)
+    ax1.text(.95, 0.73, "trigger", size=8, ha="center",
+             transform=ax1.transAxes)
     # 5. Add patch to list of objects to draw onto the figure
     fig.patches.append(arrow)
 
@@ -213,7 +213,7 @@ def plot_1d_result(result):
     # 5. Add patch to list of objects to draw onto the figure
     ax2.add_patch(arrow2)
 
-    ax2.text(1.1, 1.1, "change", size=12, ha="center", fontsize=8)
+    ax2.text(1.1, 1.1, "change", size=8, ha="center")
 
     ax1.title.set_text(r'Robust control $K_0$')
     ax2.title.set_text(r'Learned control $K_N$')

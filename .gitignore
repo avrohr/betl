@@ -143,7 +143,7 @@ ENV/
 *.cb2
 
 ## Generated PDFs
-*.pdf
+# *.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
