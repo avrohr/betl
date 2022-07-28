@@ -1,46 +1,40 @@
 import numpy as np
 import copy
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 
 from betl.linear_system import DiscreteTimeLinearSystem as LinearSystem
-from betl.linear_system import StateFeedbackLaw, ExcitingStateFeedbackLaw
-from betl.synthesis.robust_lqr_synth import RLQRSyntheziser
-
-from betl.uncertain_state_space_model import MatrixNormal, UncertainStateSpaceModel
-from betl.cost_analysis import LinearQuadraticCostAnalysis, EmpiricalQuadraticCostAnalysis
-
-from betl.excitation_strategy import optimal_signal
 
 
 import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
+import matplotlib as mpl
+
+# Use the pgf backend (must be set before pyplot imported)
+mpl.use('pgf')
+
+from utils.postprocessing_utils import initialize_plot, set_size
+c, params = initialize_plot('CDC_paper')  # specify font size etc.,
+mpl.rcParams.update(params)
+
+import seaborn as sns
+sns.set_style("whitegrid")
+
+import matplotlib.pyplot as plt
+plt.rcParams.update(params)
+
+# sns.set_context("paper", rc=params)
 
 def plot_1d_result(result):
 
-    import matplotlib as mpl
-    from utils.postprocessing_utils import initialize_plot, set_size
-
-    # Use the pgf backend (must be set before pyplot imported)
-    mpl.use('pgf')
-
-    # You can also load latex packages
-    mpl.rcParams.update({
-        "pgf.preamble": '\\usepackage[utf8x]{inputenc}\\usepackage[light]{kpfonts}\\usepackage{amsfonts}\\usepackage{amsmath}\\usepackage{amssymb}',
-    })
-
-    import seaborn as sns
-    import matplotlib.pyplot as plt
 
     settings = result['settings']
 
     system = LinearSystem(settings['system']['A'], settings['system']['B'], settings['system']['V'])
     K_prior = result['K0']
-    controller = StateFeedbackLaw(K=K_prior)
-    system.controller = controller
+    # controller = StateFeedbackLaw(K=K_prior)
+    # system.controller = controller
 
     T = settings['T']
 
@@ -102,20 +96,13 @@ def plot_1d_result(result):
         prior = systems_post.loc[systems_post['dist'] == 'prior']
         post = systems_post.loc[systems_post['dist'] == 'posterior']
 
-        # plot = sns.kdeplot(ax=axis, data=prior, x="A", y="B", levels=10, fill=True, color=color_prior, alpha=.5)
         plot = sns.kdeplot(ax=axis, data=post, x="A", y="B", levels=10, fill=True, color=color_post)
-        # plot.set_xlim(0.88, 1.12)
-        # plot.set_ylim(0.18, 1.82)
         plot.plot(system.A, system.B, 'x', mew=2.5, ms=8, color=color_true)
         # plt.show()
 
         return plot
 
     from matplotlib.gridspec import GridSpec
-
-    # ADJUST PATH IN "initialize_plot"
-    c, params = initialize_plot('CDC_paper')  # specify font size etc.,
-    plt.rcParams.update(params)
 
     # CDC column width is 245pt, for double column plot change to 505pt
     x, y = set_size(245,
@@ -125,8 +112,7 @@ def plot_1d_result(result):
     colors = sns.color_palette("deep", 5)
     colors[4] = 'black'
     sns.set_palette(colors)
-    sns.set_style("whitegrid")
-    sns.set_context("paper", rc={"font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8})
+
 
     # def format_axes(fig):
     #     for i, ax in enumerate(fig.axes):
@@ -174,10 +160,10 @@ def plot_1d_result(result):
     )
 
     ax1.text(.95, 0.07, "learn", size=8, ha="center",
-             transform=ax1.transAxes)
+             transform=ax1.transAxes, usetex=True)
 
     ax1.text(.95, 0.73, "trigger", size=8, ha="center",
-             transform=ax1.transAxes)
+             transform=ax1.transAxes, usetex=True)
     # 5. Add patch to list of objects to draw onto the figure
     fig.patches.append(arrow)
 
@@ -213,15 +199,15 @@ def plot_1d_result(result):
     # 5. Add patch to list of objects to draw onto the figure
     ax2.add_patch(arrow2)
 
-    ax2.text(1.1, 1.1, "change", size=8, ha="center")
+    ax2.text(1.1, 1.1, "change", size=9, ha="center", usetex=True)
 
-    ax1.title.set_text(r'Robust control $K_0$')
-    ax2.title.set_text(r'Learned control $K_N$')
+    ax1.set_title(label=r'Robust control $K_0$', size=9)
+    ax2.set_title(label=r'Learned control $K_N$', size=9)
 
-    ax1.set_xlabel("$A$")
-    ax1.set_ylabel("$B$")
+    ax1.set_xlabel("$A$", usetex=True)
+    ax1.set_ylabel("$B$", usetex=True)
 
-    ax2.set_xlabel("$A$")
+    ax2.set_xlabel("$A$", usetex=True)
 
     gs.update(left=0.15, right=0.99, top=0.9, bottom=0.2, wspace=0.1, hspace=0)
 

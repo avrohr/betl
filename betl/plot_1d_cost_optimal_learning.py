@@ -1,23 +1,34 @@
 import numpy as np
 import copy
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 
 from betl.linear_system import DiscreteTimeLinearSystem as LinearSystem
-from betl.linear_system import StateFeedbackLaw, ExcitingStateFeedbackLaw
-from betl.synthesis.robust_lqr_synth import RLQRSyntheziser
-
-from betl.uncertain_state_space_model import MatrixNormal, UncertainStateSpaceModel
-from betl.cost_analysis import LinearQuadraticCostAnalysis, EmpiricalQuadraticCostAnalysis
-
-from betl.excitation_strategy import optimal_signal
-
+from betl.cost_analysis import LinearQuadraticCostAnalysis
+from utils.postprocessing_utils import initialize_plot, set_size
 
 import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.WARN)
 
+
+import matplotlib as mpl
+
+# Use the pgf backend (must be set before pyplot imported)
+mpl.use('pgf')
+c, params = initialize_plot('CDC_paper')  # specify font size etc.,
+mpl.rcParams.update(params)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+sns.set_style("whitegrid")
+# sns.set_context("paper", rc=params)
+
+font = {'family': 'serif',
+        'size': 9,
+        'usetex': True,
+        }
 
 def plot_cost_bars(axis, result):
 
@@ -73,76 +84,36 @@ def plot_cost_bars(axis, result):
 
     data = pd.DataFrame.from_dict(data)
 
-    # set the figure size
-    # plt.figure(figsize=(10, 7))
-
-    # print(data)
     total = data.groupby(['N'])['cost_sup'].sum().reset_index()
-    # print(total)
 
-    # bar chart 1 -> top bars (group of 'smoker=No')
     bar1 = sns.barplot(ax=axis, x="N", y="cost_sup", data=total, saturation=.5)
-
-    # Define some hatches
-    hatches = ['x' for i in range(20)]
 
     # Loop over the bars
     for i, thisbar in enumerate(bar1.patches):
-        # Set a different hatch for each bar
-        thisbar.set_hatch(hatches[i])
+        thisbar.set_hatch('x')
 
-    # bottom bar ->  take only smoker=Yes values from the data
-    # bottom bar ->  take only smoker=Yes values from the data
     excitation = data[data.excitation == False]
 
-    # bar chart 2 -> bottom bars (group of 'smoker=Yes')
     bar2 = sns.barplot(ax=axis, x="N", y="cost_sup", data=excitation, estimator=sum, ci=None)
 
-    # add legend
-    # top_bar = mpatches.Patch(color='darkblue', label='excitation = Yes')
-    # bottom_bar = mpatches.Patch(color='lightblue', label='excitation = No')
-    # plt.legend(handles=[top_bar, bottom_bar])
 
-    handles, labels = bar1.get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys())
+    # handles, labels = bar1.get_legend_handles_labels()
+    # by_label = dict(zip(labels, handles))
+    # plt.legend(by_label.values(), by_label.keys())
 
-    # bar2.set_ylabel(
-    #     r'$\frac{\mathbb{E}[ J_{\pi_e}(K_i) ] + \mathbb{E}[ J(K_{i+1}, \theta) ]}{\mathbb{E}[ J_{opt})]}$')
-    # # sns.move_legend(
+    bar2.set_ylabel(r'normalized $J$', fontdict=font)
 
-    bar2.set_ylabel(r'normalized $J$')
-    # bar2.set_?
-    #     bar1, "lower center",
-    #     bbox_to_anchor=(.5, 1), ncol=4, title=None, frameon=False,
-    # )
-    # show the graph
-    # plt.show()
+    labels = [r'$'+str(N)+'$' for N in Ns]
+    axis.set_xticklabels(labels, usetex=True)
 
     return data
 
 def plot_1d_result(result):
 
-    import matplotlib as mpl
-    from utils.postprocessing_utils import initialize_plot, set_size
-
-    # Use the pgf backend (must be set before pyplot imported)
-    # mpl.use('pgf')
-
-    # You can also load latex packages
-    mpl.rcParams.update({
-        "pgf.preamble": '\\usepackage[utf8x]{inputenc}\\usepackage[light]{kpfonts}\\usepackage{amsfonts}\\usepackage{amsmath}\\usepackage{amssymb}',
-    })
-
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-
     settings = result['settings']
 
     system = LinearSystem(settings['system']['A'], settings['system']['B'], settings['system']['V'])
     K_prior = result['K0']
-    controller = StateFeedbackLaw(K=K_prior)
-    system.controller = controller
 
     T = settings['T']
 
@@ -166,9 +137,9 @@ def plot_1d_result(result):
 
     print('-----------------------------------------------------------')
 
-    A_prior, B_prior, V_prior = ussm_prior.sample(2000, c=synthesis_settings['confidence_interval'])
+    A_prior, B_prior, V_prior = ussm_prior.sample(5000, c=synthesis_settings['confidence_interval'])
 
-    data_list = list()
+    prior_samples = list()
     for A, B, V in zip(A_prior, B_prior, V_prior):
 
         system_sample = dict()
@@ -177,17 +148,12 @@ def plot_1d_result(result):
         system_sample['V'] = V[0][0]
         system_sample['dist'] = 'prior'
 
-        data_list.append(system_sample)
+        prior_samples.append(system_sample)
 
-    systems_prior = pd.DataFrame.from_dict(data_list)
-
-    prior_plot = sns.kdeplot(data=systems_prior, x="A", y="B", fill=True)
-    plt.plot(system.A, system.B, 'rx', ms=10)
-    plt.show()
 
     def plot_1d_ussm(axis, ussm, prior_list, color_prior, color_post, color_true):
 
-        A_post, B_post, V_post = ussm.sample(2000, c=synthesis_settings['confidence_interval'])
+        A_post, B_post, V_post = ussm.sample(5000, c=synthesis_settings['confidence_interval'])
         # data_list = list()
         data_list = copy.deepcopy(prior_list)
         for A, B, V in zip(A_post, B_post, V_post):
@@ -199,7 +165,6 @@ def plot_1d_result(result):
 
             data_list.append(system_sample)
 
-        import pandas as pd
         systems_post = pd.DataFrame.from_dict(data_list)
         prior = systems_post.loc[systems_post['dist'] == 'prior']
         post = systems_post.loc[systems_post['dist'] == 'posterior']
@@ -213,11 +178,7 @@ def plot_1d_result(result):
 
         return plot
 
-    from matplotlib.gridspec import GridSpec
 
-    # ADJUST PATH IN "initialize_plot"
-    c, params = initialize_plot('CDC_paper')  # specify font size etc.,
-    plt.rcParams.update(params)
 
     # CDC column width is 245pt, for double column plot change to 505pt
     x, y = set_size(505,
@@ -226,8 +187,7 @@ def plot_1d_result(result):
 
     colors = sns.color_palette("deep", 5)
     sns.set_palette(colors)
-    sns.set_style("whitegrid")
-    sns.set_context("paper", rc={"font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8})
+
 
     # def format_axes(fig):
     #     for i, ax in enumerate(fig.axes):
@@ -235,7 +195,7 @@ def plot_1d_result(result):
     #         ax.tick_params(labelbottom=False, labelleft=False)
 
 
-    fig = plt.figure(figsize=(x, y*0.8))
+    fig = plt.figure(figsize=(x, y*0.6))
 
 
     gs = GridSpec(7, 6, figure=fig)
@@ -244,10 +204,9 @@ def plot_1d_result(result):
     ax3 = fig.add_subplot(gs[0:3, 4:6])
 
     # identical to ax1 = plt.subplot(gs.new_subplotspec((0, 0), colspan=3))
-    ax4 = fig.add_subplot(gs[3:7, 0:3])
-    ax5 = fig.add_subplot(gs[3:7, 3:6], sharey=ax4)
+    ax4 = fig.add_subplot(gs[3:7, 0:2])
+    ax5 = fig.add_subplot(gs[3:7, 2:6], sharey=ax4)
 
-    prior_samples = data_list
 
     # --- small
     plt_t4 = plot_1d_ussm(ax1, result['post_ussm'][1]['ussm'], prior_samples, color_prior=colors[0], color_post=colors[1], color_true=colors[4])
@@ -263,7 +222,6 @@ def plot_1d_result(result):
     ax3.set_yticklabels([])
 
     plot_cost_bars(ax4, result)
-
 
     n_plot = beta_data['n_plot']
     excitation = beta_data['excitation'] / (J_K_opt_true * T)
@@ -283,7 +241,6 @@ def plot_1d_result(result):
     ax5.plot(n_plot, np.array(excitation) + np.array(fitted_cost), color=palette[2],
               label=r'$\mathbb{E}[J_{\Delta}(N)]$')
 
-
     n_list = np.array(list(N_s))
     examples = np.array(list(beta(n) for n in n_list))
 
@@ -293,31 +250,40 @@ def plot_1d_result(result):
 
     ax4.text(0.5, 0.925, r'$\mathbb{E}[J_{\Delta}(N) \mid \theta] \;\;$', horizontalalignment='center', verticalalignment='center', transform=ax4.transAxes)
 
-    ax5.scatter(n_list, total, color=colors[0:4])
-    ax5.set_xlabel(r'number of excitation steps $N$')
-    ax5.set_ylabel('normalized expected cost')
+    ax5.scatter(n_list, total, color=colors[0:4], s=40)
+    ax5.set_xlabel(r'number of excitation steps $N$', fontdict=font)
+    # ax5.set_ylabel('normalized expected cost', usetex=True)
 
-    ax1.set_xlabel("$A$")
-    ax1.set_ylabel("$B$")
+    ax1.set_ylabel("$B$", usetex=True)
+    ax1.set_xlabel("$A$", usetex=True)
 
-    ax2.set_xlabel("$A$")
-    ax3.set_xlabel("$A$")
+    ax2.set_xlabel("$A$", usetex=True)
+    ax3.set_xlabel("$A$", usetex=True)
 
-    ax4.set_xlabel("$N$")
+    ax1.xaxis.set_label_position('top')
+    ax2.xaxis.set_label_position('top')
+    ax3.xaxis.set_label_position('top')
+
+    ax1.tick_params(labelbottom=False, labeltop=True)
+    ax2.tick_params(labelbottom=False, labeltop=True)
+    ax3.tick_params(labelbottom=False, labeltop=True)
+
+
+    ax4.set_xlabel("$N$", usetex=True)
 
     ax5.set(ylabel=None)
     ax5.tick_params('y', labelleft=False)
 
-    ax5.legend(loc='lower right')
+    legend = ax5.legend(loc='lower right', borderpad=0.95)
 
-    gs.update(left=0.065, right=0.99, top=0.95, bottom=0.12, wspace=0.1, hspace=4.5)
+    gs.update(left=0.1, right=0.99, top=0.85, bottom=0.15, wspace=0.1, hspace=0.5)
 
     # plt.savefig('1d-example-300dpi.eps', dpi=300)
     # plt.savefig('1d-example-300dpi.pdf', dpi=300)
 
-    plt.show()
-    # plt.savefig('figures/1d-example.pgf', format='pgf')
-    # plt.close()
+    # plt.show()
+    plt.savefig('figures/1d-example.pgf', format='pgf')
+    plt.close()
 
 if __name__ == "__main__":
     np.random.seed(2)

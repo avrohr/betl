@@ -29,11 +29,28 @@ def initialize_plot(purpose):
 
     if purpose is 'CDC_paper':
         plot_params = {
-            "font.family": "serif",  # use serif/main font for text elements
-            "text.usetex": True,  # use inline math for ticks
-            "pgf.rcfonts": False,  # don't setup fonts from rc parameters
-            'text.latex.preamble': r'\usepackage{amsfonts}',
-            "font.size": 9
+        'font.family': 'serif',
+        'text.usetex': True,
+        'pgf.rcfonts': True,
+        'axes.labelsize': 9,
+        'ytick.labelsize': 9,
+        'xtick.labelsize': 9,
+        "legend.fontsize": 9,
+        "pgf.preamble": "\n".join([
+            r'\usepackage[utf8x]{inputenc}',
+            r'\usepackage[light]{kpfonts}',
+            r'\usepackage{amsmath}',
+            r'\usepackage{amsfonts}',
+            r'\usepackage{amssymb}',
+        ]),
+        'text.latex.preamble': [
+                                r'\usepackage[utf8x]{inputenc}',
+                                r'\usepackage[light]{kpfonts}',
+                                r'\usepackage{amsmath}',
+                                r'\usepackage{amssymb}',
+                                r'\usepackage{amsfonts}'
+                                ],
+        "font.size": 9
         }
     else:
         plot_params = {}

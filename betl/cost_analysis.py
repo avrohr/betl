@@ -161,8 +161,8 @@ class EmpiricalQuadraticCostAnalysis:
 if __name__ == "__main__":
 
     from betl.uncertain_state_space_model import UncertainStateSpaceModel
-    from betl.systems.linear_system import GraphLaplacian3D
-    from betl.systems.control_law import NormalRandomControlLaw, StateFeedbackLaw, FeedbackWithNormalRandomControlLaw
+    from betl.linear_system import GraphLaplacian3D
+    from betl.linear_system import NormalRandomControlLaw, StateFeedbackLaw, FeedbackWithNormalRandomControlLaw
     from betl.uncertain_state_space_model import UncertainStateSpaceModel, MatrixNormal
 
     noise = np.ones((3, 3))*0.01 + np.eye(3) * 0.01
