@@ -1,8 +1,20 @@
 # Improving the Performance of Robust Control through Event-Triggered Learning
 
-This repository is part of the supplementary material for the submission titled **Improving the Performance of Robust Control through Event-Triggered Learning** by *Alexander von Rohr, Friedrich Solowjow and Sebastian Trimpe*.
+This repository is part of the supplementary material for the submission titled **Improving the Performance of Robust Control through Event-Triggered Learning** by *Alexander von Rohr, Friedrich Solowjow and Sebastian Trimpe* published in the [proceedings of the IEEE Conference on Decision and Control](https://ieeexplore.ieee.org/document/9993350).
 
-If you are finding this code useful please let us know and get in contact.
+If you are finding this code useful please get in contact and consider citing the paper.
+
+```
+@inproceedings{rohr2022improving,
+  author = {{von Rohr}, Alexander and Solowjow, Friedrich and Trimpe, Sebastian},
+  title = {Improving the Performance of Robust Control through Event-Triggered Learning},
+  booktitle = {Proceedings of the IEEE Conference on Decision and Control},
+  pages = {3424-3430},
+  year = {2022},
+  doi = {10.1109/CDC51059.2022.9993350},
+}
+```
+
 
 ## How to use the supplementary code
 
